@@ -1,8 +1,9 @@
-project('scrcpy', 'c',
+project('scrcpy', 'c', 'cpp',
         version: '4.1',
         meson_version: '>= 0.49',
         default_options: [
             'c_std=c11',
+            'cpp_std=c++20',
             'warning_level=2',
             'b_ndebug=if-release',
         ])

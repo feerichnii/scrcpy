@@ -48,6 +48,9 @@ ninja -C "$WINXX_BUILD_DIR"
 # Group intermediate outputs into a 'dist' directory
 mkdir -p "$WINXX_BUILD_DIR/dist"
 cp "$WINXX_BUILD_DIR"/app/scrcpy.exe "$WINXX_BUILD_DIR/dist/"
+if [[ -f "$WINXX_BUILD_DIR/app/scrcpy-gui.exe" ]]; then
+    cp "$WINXX_BUILD_DIR"/app/scrcpy-gui.exe "$WINXX_BUILD_DIR/dist/"
+fi
 cp app/data/scrcpy-noconsole.vbs "$WINXX_BUILD_DIR/dist/"
 cp app/data/scrcpy.png "$WINXX_BUILD_DIR/dist/"
 cp app/data/disconnected.png "$WINXX_BUILD_DIR/dist/"

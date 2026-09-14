@@ -196,6 +196,89 @@ executable('scrcpy', src,
            install: true,
            c_args: [])
 
+# scrcpy-gui: multi-device manager (SDL3 + Dear ImGui)
+if get_option('compile_gui')
+    gui_c_src = [
+        'src/adb/adb.c',
+        'src/adb/adb_device.c',
+        'src/adb/adb_parser.c',
+        'src/compat.c',
+        'src/util/env.c',
+        'src/util/file.c',
+        'src/util/intr.c',
+        'src/util/log.c',
+        'src/util/memory.c',
+        'src/util/net.c',
+        'src/util/process.c',
+        'src/util/process_intr.c',
+        'src/util/str.c',
+        'src/util/strbuf.c',
+        'src/util/thread.c',
+        'src/util/tick.c',
+    ]
+
+    if host_machine.system() == 'windows'
+        gui_c_src += [
+            'src/util/command.c',
+            'src/sys/win/file.c',
+            'src/sys/win/process.c',
+        ]
+    else
+        gui_c_src += [
+            'src/sys/unix/file.c',
+            'src/sys/unix/process.c',
+        ]
+    endif
+
+    gui_cpp_src = [
+        'src/gui/gui_main.cpp',
+        'src/gui/gui_app.cpp',
+        'src/gui/models.cpp',
+        'src/gui/device_manager.cpp',
+        'src/gui/session_manager.cpp',
+        'src/gui/process_manager.cpp',
+        'src/gui/settings.cpp',
+        'src/gui/layout_manager.cpp',
+        'src/gui/log_manager.cpp',
+        'src/gui/cli_builder.cpp',
+        'src/gui/session/process_scrcpy_session.cpp',
+        'src/gui/views/devices_view.cpp',
+        'src/gui/views/sessions_view.cpp',
+        'src/gui/views/settings_view.cpp',
+        'src/gui/views/logs_view.cpp',
+        'third_party/imgui/imgui.cpp',
+        'third_party/imgui/imgui_draw.cpp',
+        'third_party/imgui/imgui_tables.cpp',
+        'third_party/imgui/imgui_widgets.cpp',
+        'third_party/imgui/backends/imgui_impl_sdl3.cpp',
+        'third_party/imgui/backends/imgui_impl_sdlrenderer3.cpp',
+    ]
+
+    imgui_inc = include_directories('third_party/imgui', 'third_party/imgui/backends')
+
+    gui_deps = [
+        dependency('libavutil', static: static),
+        dependency('sdl3', version: '>= 3.2.0', static: static),
+    ]
+    if host_machine.system() == 'windows'
+        gui_deps += cc.find_library('mingw32')
+        gui_deps += cc.find_library('ws2_32')
+    endif
+
+    gui_kwargs = {
+        'dependencies': gui_deps,
+        'include_directories': [src_dir, imgui_inc],
+        'install': true,
+        'cpp_args': ['-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS'],
+        'c_args': [],
+    }
+    if host_machine.system() == 'windows'
+        gui_kwargs += {'win_subsystem': 'windows'}
+    endif
+
+    executable('scrcpy-gui', gui_c_src + gui_cpp_src, kwargs: gui_kwargs)
+endif
+
 # <https://mesonbuild.com/Builtin-options.html#directories>
 datadir = get_option('datadir') # by default 'share'
 

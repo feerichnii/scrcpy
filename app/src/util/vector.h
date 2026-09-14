@@ -8,6 +8,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+# define SC_RESTRICT
+#else
+# define SC_RESTRICT restrict
+#endif
+
 // Adapted from vlc_vector:
 // <https://code.videolan.org/videolan/vlc/-/blob/0857947abaed9c89810cd96353aaa1b7e6ba3b0d/include/vlc_vector.h>
 
@@ -116,7 +122,7 @@ sc_vector_clamp_(size_t x, size_t min, size_t max)
  */
 static inline void *
 sc_vector_reallocdata_(void *ptr, size_t count, size_t size,
-                        size_t *restrict pcap, size_t *restrict psize)
+                        size_t *SC_RESTRICT pcap, size_t *SC_RESTRICT psize)
 {
     void *p = reallocarray(ptr, count, size);
     if (!p) {

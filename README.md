@@ -45,6 +45,7 @@ Its features include:
  - physical [keyboard][hid-keyboard] and [mouse][hid-mouse] simulation (HID)
  - [gamepad](doc/gamepad.md) support
  - [OTG mode](doc/otg.md)
+ - **multi-device GUI** ([scrcpy-gui](doc/gui.md)) — manage many USB devices without Terminal
  - and more…
 
 [hid-keyboard]: doc/keyboard.md#physical-keyboard-simulation
@@ -81,6 +82,30 @@ Note that USB debugging is not required to run scrcpy in [OTG mode](doc/otg.md).
  - [Linux](doc/linux.md)
  - [Windows](doc/windows.md) (read [how to run](doc/windows.md#run))
  - [macOS](doc/macos.md)
+
+## scrcpy GUI (multi-device)
+
+This fork includes **`scrcpy-gui`**: a native desktop manager that lists all ADB
+devices and can start/stop several independent `scrcpy` sessions at once.
+
+```bash
+meson setup build -Dcompile_server=false -Dportable=true
+ninja -C build app/scrcpy app/scrcpy-gui
+./build/app/scrcpy-gui
+```
+
+On macOS you can package a double-clickable app:
+
+```bash
+./release/package_local_gui.sh build dist
+open "dist/Scrcpy GUI.app"
+```
+
+Settings live in `scrcpy-gui.json` under the platform config directory
+(`~/Library/Application Support/scrcpy/` on macOS, `%APPDATA%\scrcpy\` on
+Windows). The classic `scrcpy` CLI is unchanged.
+
+See [doc/gui.md](doc/gui.md) for details.
 
 
 ## Must-know tips

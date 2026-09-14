@@ -8,3 +8,6 @@ build/
 /x/
 local.properties
 /scrcpy-server
+app/third_party/imgui/examples/
+app/third_party/imgui/docs/
+app/third_party/imgui/misc/

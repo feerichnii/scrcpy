@@ -246,6 +246,13 @@ sc_adb_kill_server(struct sc_intr *intr, unsigned flags) {
 }
 
 bool
+sc_adb_restart_server(struct sc_intr *intr, unsigned flags) {
+    // Best-effort kill; start even if kill failed (server may already be down)
+    (void) sc_adb_kill_server(intr, flags | SC_ADB_NO_LOGERR);
+    return sc_adb_start_server(intr, flags);
+}
+
+bool
 sc_adb_forward(struct sc_intr *intr, const char *serial, uint16_t local_port,
                const char *device_socket_name, unsigned flags) {
     char local[4 + 5 + 1]; // tcp:PORT
@@ -419,7 +426,7 @@ sc_adb_disconnect(struct sc_intr *intr, const char *ip_port, unsigned flags) {
     return process_check_success_intr(intr, pid, "adb disconnect", flags);
 }
 
-static bool
+bool
 sc_adb_list_devices(struct sc_intr *intr, unsigned flags,
                     struct sc_vec_adb_devices *out_vec) {
     const char *const argv[] = SC_ADB_COMMAND("devices", "-l");
