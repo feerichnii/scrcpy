@@ -1,104 +1,62 @@
-# scrcpy GUI (multi-device)
+# scrcpy GUI
 
-`scrcpy-gui` is a desktop manager for multiple Android devices. It discovers ADB
-devices, launches an independent `scrcpy` process per serial, and keeps the
-original CLI unchanged.
+Modern multi-device GUI for scrcpy (React + Vite + Tailwind).
 
-## Features (Release 0.1 / 0.2)
+It lives in [`gui/`](../gui) and talks to a small local Node server that:
 
-- Native GUI (SDL3 + Dear ImGui), no Terminal/CMD required for daily use
-- Lists all ADB devices (USB / TCP-IP / emulator) with state badges
-- Start / Stop one device, selected devices, or all devices
-- Isolated sessions: one failure does not stop the others
-- Staggered multi-device startup
-- Global + per-device settings with presets
-- Optional auto-start when a device becomes authorized
-- Auto window grid layout via `--window-x/y/width/height`
-- Per-session logs inside the GUI
+- scans ADB devices
+- starts / stops independent `scrcpy` processes per serial
+- stores presets locally in `gui-presets.json` (optional Supabase cloud presets)
 
-## Build
+The classic C++ ImGui binary (`scrcpy-gui` from Meson) remains available but the
+**primary UX is this web GUI**.
 
-Requirements: Meson, Ninja, pkg-config, SDL3, FFmpeg (libavutil at least for
-GUI; full FFmpeg for the CLI `scrcpy` binary).
+## Quick start
 
 ```bash
+# build CLI scrcpy (optional but needed for Run)
 meson setup build-gui -Dcompile_server=false -Dportable=true -Dusb=false -Dv4l2=false
-ninja -C build-gui app/scrcpy app/scrcpy-gui
+ninja -C build-gui app/scrcpy
+
+cd gui
+npm install
+npm run dev
 ```
 
-Disable the GUI target with `-Dcompile_gui=false` if needed.
+Open **http://localhost:5173** (Vite UI). API runs on **http://localhost:3000**.
 
-### Local macOS app bundle
+Production (single port):
 
 ```bash
-./release/package_local_gui.sh build-gui dist
-open "dist/Scrcpy GUI.app"
+cd gui
+npm start
+# open http://localhost:3000
 ```
 
-Release packaging:
+## Features
 
-- macOS: `release/build_macos.sh <arch>` then `release/package_macos_gui.sh <arch>`
-- Windows: `release/build_windows.sh 64` copies `scrcpy-gui.exe` next to `scrcpy.exe`
-  (GUI subsystem, no console window)
+- Scan connected USB / TCP devices
+- Per-device enable + common or custom settings
+- Full scrcpy option sections (video / audio / recording / control / …)
+- Live command preview
+- **Run** / **Stop** — launches real `scrcpy` processes
+- Presets (local JSON by default)
 
-## Run
+## Config locations
 
-```bash
-# from a portable build directory containing both binaries
-./scrcpy-gui
-```
+| Data | Path |
+|------|------|
+| Local presets | macOS: `~/Library/Application Support/scrcpy/gui-presets.json` |
+| | Windows: `%APPDATA%\scrcpy\gui-presets.json` |
+| | Linux: `~/.config/scrcpy/gui-presets.json` |
 
-`scrcpy-gui` looks for a `scrcpy` binary beside itself (portable) or on `PATH`.
+Optional cloud presets: copy `gui/.env.example` → `gui/.env` and set
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
 
-The classic CLI still works:
+## Environment
 
-```bash
-./scrcpy -s <serial>
-```
-
-## Configuration
-
-Settings are stored in `scrcpy-gui.json`:
-
-| Platform | Path |
-|----------|------|
-| macOS | `~/Library/Application Support/scrcpy/scrcpy-gui.json` |
-| Windows | `%APPDATA%\scrcpy\scrcpy-gui.json` |
-| Linux | `~/.config/scrcpy/scrcpy-gui.json` |
-
-Session logs are written under a `logs/` subdirectory of that folder.
-
-Example:
-
-```json
-{
-  "global": {
-    "max_fps": 60,
-    "max_size": 0,
-    "audio": true,
-    "stagger_ms": 200,
-    "auto_layout": true
-  },
-  "devices": {
-    "8C69ABCDEF": {
-      "name": "HONOR test",
-      "preset": "high_quality",
-      "auto_start": true
-    }
-  }
-}
-```
-
-## Architecture
-
-```text
-scrcpy-gui
-  ├─ DeviceManager      (adb devices -l polling)
-  ├─ SessionManager     (state machine per serial)
-  ├─ ProcessManager     (spawns scrcpy -s SERIAL ...)
-  ├─ SettingsManager
-  └─ LayoutManager
-```
-
-Each device runs as a separate `scrcpy` process. This keeps upstream
-compatibility and isolates crashes until a future embedded multi-view lands.
+| Variable | Meaning |
+|----------|---------|
+| `ADB` | Path to adb |
+| `SCRCPY` | Path to scrcpy binary |
+| `SCRCPY_GUI_PORT` | API/static port (default `3000`) |

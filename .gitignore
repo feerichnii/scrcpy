@@ -11,3 +11,7 @@ local.properties
 app/third_party/imgui/examples/
 app/third_party/imgui/docs/
 app/third_party/imgui/misc/
+imgui.ini
+gui/node_modules/
+gui/dist/
+gui/.env

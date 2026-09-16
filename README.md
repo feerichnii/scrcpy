@@ -85,27 +85,29 @@ Note that USB debugging is not required to run scrcpy in [OTG mode](doc/otg.md).
 
 ## scrcpy GUI (multi-device)
 
-This fork includes **`scrcpy-gui`**: a native desktop manager that lists all ADB
-devices and can start/stop several independent `scrcpy` sessions at once.
+This fork includes a **React GUI** in [`gui/`](gui) for managing multiple devices
+without the terminal.
 
 ```bash
-meson setup build -Dcompile_server=false -Dportable=true
-ninja -C build app/scrcpy app/scrcpy-gui
-./build/app/scrcpy-gui
+# build the scrcpy CLI used by Run
+meson setup build-gui -Dcompile_server=false -Dportable=true -Dusb=false -Dv4l2=false
+ninja -C build-gui app/scrcpy
+
+cd gui && npm install && npm run dev
+# open http://localhost:5173
 ```
 
-On macOS you can package a double-clickable app:
+Buttons:
 
-```bash
-./release/package_local_gui.sh build dist
-open "dist/Scrcpy GUI.app"
-```
+- **Scan Devices** — ADB discovery
+- **Run** — start one `scrcpy` process per enabled device
+- **Stop** — terminate active sessions
 
-Settings live in `scrcpy-gui.json` under the platform config directory
-(`~/Library/Application Support/scrcpy/` on macOS, `%APPDATA%\scrcpy\` on
-Windows). The classic `scrcpy` CLI is unchanged.
+Presets are saved locally under the platform config directory (optional Supabase).
+See [doc/gui.md](doc/gui.md).
 
-See [doc/gui.md](doc/gui.md) for details.
+There is also a legacy native ImGui binary (`scrcpy-gui` via Meson
+`-Dcompile_gui=true`); the web GUI is the recommended frontend.
 
 
 ## Must-know tips
